@@ -1,0 +1,30 @@
+{
+  "devDependencies": {
+    "sequelize-cli": "^6.4.1"
+  },
+  "scripts": {
+    "start": "nodemon server.js"
+  },
+  "dependencies": {
+    "app-module-path": "^2.2.0",
+    "bcrypt": "^5.0.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.1",
+    "express": "^4.18.1",
+    "fs": "^0.0.1-security",
+    "http-status": "^1.5.2",
+    "i18next": "^21.8.16",
+    "i18next-fs-backend": "^1.1.4",
+    "i18next-http-middleware": "^3.2.1",
+    "joi": "^17.6.0",
+    "jsonwebtoken": "^8.5.1",
+    "moment": "^2.29.4",
+    "moment-timezone": "^0.5.34",
+    "nodemailer": "^6.7.7",
+    "nodemon": "^2.0.19",
+    "path": "^0.12.7",
+    "pg": "^8.7.3",
+    "sequelize": "^6.21.3",
+    "uuid": "^8.3.2"
+  }
+}
