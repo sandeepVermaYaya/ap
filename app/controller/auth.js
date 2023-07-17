@@ -38,7 +38,7 @@ exports.login = async (req, res, next) => {
     if (totalLogin > (process.env.MAX_LOGIN_DEVICE * 1)) {
       await dbTrans.rollback()
       return response.error({ msgCode: 'TOTAL_LOGIN' }, res, httpStatus.UNAUTHORIZED);
-    }
+    } 
     const { password, is_phone_verified, is_email_verified, ...resultData } = checkUser;
     resultData.token = authJwt.generateAuthJwt({
       id: checkUser.id,
