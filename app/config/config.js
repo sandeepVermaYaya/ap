@@ -1,10 +1,11 @@
+const { env } = require('../constents/index');
 module.exports = {
   "development": {
-    "username": "postgres",
-    "password": 'Admin',
-    "database": 'sp',
-    "host": 'localhost',
-    "dialect": "postgres"
+    username: env.DB_USER,
+    password: env.DB_PASSWORD,
+    database: env.DB_NAME,
+    host: env.DB_HOST,
+    dialect: env.DIALECT
   },
   "test": {
     "username": "root",
@@ -15,10 +16,10 @@ module.exports = {
 
   },
   "production": {
-    "username": "postgres",
-    "password": "Vikas@123",
-    "database": "postgres",
-    "host": "localhost",
-    "dialect": "postgres"
+    username: env.DB_USER,
+    password: env.DB_PASSWORD,
+    database: env.DB_NAME,
+    host: env.DB_HOST,
+    dialect: env.DIALECT
   }
 }
