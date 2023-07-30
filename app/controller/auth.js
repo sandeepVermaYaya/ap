@@ -22,22 +22,22 @@ exports.login = async (req, res, next) => {
 
     const checkUser = await commonService.findByCondition(auth, condition);
     if (!checkUser) {
-      return response.error({ msgCode: req.t('INVALID_CREDENTIALS') }, res, httpStatus.UNAUTHORIZED, dbTrans);
+      return response.error({req, res, msgCode: req.t('INTERNAL_SERVER_ERROR') }, httpStatus.INTERNAL_SERVER_ERROR, dbTrans);
     }
     const isLogin = passwordHash.comparePassword(req.body.password, checkUser.password);
     if (!isLogin) {
-      return response.error({ msgCode: req.t('INVALID_CREDENTIALS') }, res, httpStatus.UNAUTHORIZED, dbTrans);
+      return response.error({req, res, msgCode: req.t('INTERNAL_SERVER_ERROR') }, httpStatus.INTERNAL_SERVER_ERROR, dbTrans);
     }
     // check status if block than return 
     if (checkUser.status == '0') {
-      return response.error({ msgCode: 'BLOCK_MSG' }, res, httpStatus.UNAUTHORIZED, dbTrans);
+      return response.error({req, res, msgCode: req.t('INTERNAL_SERVER_ERROR') }, httpStatus.INTERNAL_SERVER_ERROR, dbTrans);
     }
     //following code for add limitation of maximum device id
 
     const totalLogin = await commonService.count(session, { auth_id: checkUser.id })
     if (totalLogin > (process.env.MAX_LOGIN_DEVICE * 1)) {
       await dbTrans.rollback()
-      return response.error({ msgCode: 'TOTAL_LOGIN' }, res, httpStatus.UNAUTHORIZED);
+      return response.error({req, res, msgCode: 'TOTAL_LOGIN' }, httpStatus.UNAUTHORIZED);
     } 
     const { password, is_phone_verified, is_email_verified, ...resultData } = checkUser;
     resultData.token = authJwt.generateAuthJwt({
@@ -54,7 +54,7 @@ exports.login = async (req, res, next) => {
     console.log('result dat', resultData.createdAt);
 
     if (!resultData.token) {
-      return response.error({ msgCode: 'INTERNAL_SERVER_ERROR' }, res, httpStatus.INTERNAL_SERVER_ERROR, dbTrans);
+      return response.error({req, res, msgCode: 'INTERNAL_SERVER_ERROR' }, httpStatus.INTERNAL_SERVER_ERROR, dbTrans);
     }
     // Passing login data to another middleware
     req.loginData = {
@@ -66,7 +66,7 @@ exports.login = async (req, res, next) => {
   }
   catch (err) {
     console.log(err);
-    return response.error({ msgCode: req.t('INTERNAL_SERVER_ERROR') }, res, httpStatus.INTERNAL_SERVER_ERROR, dbTrans);
+    return response.error({req, res, msgCode: req.t('INTERNAL_SERVER_ERROR') }, httpStatus.INTERNAL_SERVER_ERROR, dbTrans);
   }
 
 };
@@ -84,7 +84,7 @@ exports.createSession = async (req, res) => {
       //for hard delete true is required to pass in delete query
       const destroySession = await commonService.deleteQuery(session, condition, dbTrans, true)
       if (!destroySession) {
-        return response.error({ msgCode: req.t('INTERNAL_SERVER_ERROR') }, res, httpStatus.INTERNAL_SERVER_ERROR, dbTrans);
+        return response.error({req, res, msgCode: req.t('INTERNAL_SERVER_ERROR') }, httpStatus.INTERNAL_SERVER_ERROR, dbTrans);
       }
     }
     const sessionData = {
@@ -97,7 +97,7 @@ exports.createSession = async (req, res) => {
     };
     const createSession = await commonService.addDetail(session, sessionData, dbTrans)
     if (!createSession) {
-      return response.error({ msgCode: req.t('INTERNAL_SERVER_ERROR') }, res, httpStatus.INTERNAL_SERVER_ERROR, dbTrans);
+      return response.error({req, res, msgCode: req.t('INTERNAL_SERVER_ERROR') }, httpStatus.INTERNAL_SERVER_ERROR, dbTrans);
     }
 
     const { ...data } = req.loginData.auth_details;
@@ -110,11 +110,11 @@ exports.createSession = async (req, res) => {
       msgCode = req.t('LOGIN_SUCCESSFUL');
     }
 
-    return response.success({ msgCode, data }, res, httpStatus.OK, dbTrans);
+    return response.success({req, res, msgCode, data }, httpStatus.OK, dbTrans);
   }
   catch (err) {
     // console.log('error are', err);
-    return response.error({ msgCode: req.t('INTERNAL_SERVER_ERROR') }, res, httpStatus.INTERNAL_SERVER_ERROR, dbTrans);
+    return response.error({req, res, msgCode: req.t('INTERNAL_SERVER_ERROR') }, httpStatus.INTERNAL_SERVER_ERROR, dbTrans);
 
   }
 };
@@ -144,20 +144,20 @@ exports.sendOtp = async (req, res) => {
       //if condition match than we update otp in existing row
       const updateData = await commonService.updateData(Otp, { otp: hashOtp }, condition, dbTrans)
       if (!updateData) {
-        return response.error({ msgCode: req.t('OTP_NOT_SEND') }, res, httpStatus.FORBIDDEN, dbTrans);
+        return response.error({req, res, msgCode: req.t('OTP_NOT_SEND') }, httpStatus.FORBIDDEN, dbTrans);
       }
       const msgCode = req.t('OTP_SENT')
-      return response.success({ msgCode, data: { token: token, OTP: otp } }, res, httpStatus.OK, dbTrans);
+      return response.success({req, res, msgCode, data: { token: token, OTP: otp } }, httpStatus.OK, dbTrans);
     }
     const createOtpDetails = await commonService.addDetail(Otp, otpData, dbTrans)
     if (!createOtpDetails) {
-      return response.error({ msgCode: req.t('OTP_NOT_SEND') }, res, httpStatus.FORBIDDEN, dbTrans);
+      return response.error({req, res, msgCode: req.t('OTP_NOT_SEND') }, httpStatus.FORBIDDEN, dbTrans);
     }
     const msgCode = 'OTP_SENT'
-    return response.success({ msgCode, data: { token: token, OTP: otp } }, res, httpStatus.OK, dbTrans);
+    return response.success({req, res, msgCode, data: { token: token, OTP: otp } }, httpStatus.OK, dbTrans);
 
   } catch (err) {
-    return response.error({ msgCode: req.t('INTERNAL_SERVER_ERROR') }, res, httpStatus.INTERNAL_SERVER_ERROR, dbTrans);
+    return response.error({req, res, msgCode: req.t('INTERNAL_SERVER_ERROR') }, httpStatus.INTERNAL_SERVER_ERROR, dbTrans);
 
   }
 }
@@ -172,17 +172,17 @@ exports.verifyOtp = async (req, res, next) => {
     //get data from token
     const { ...tokenData } = req.token
     if (tokenData.email != email) {
-      return response.error({ msgCode: req.t('INVALID_TOKEN') }, res, httpStatus.UNAUTHORIZED, dbTrans);
+      return response.error({req, res, msgCode: req.t('INVALID_TOKEN') }, httpStatus.UNAUTHORIZED, dbTrans);
     }
     const details = await commonService.findByCondition(Otp, condition)
     // console.log('details', details);
 
     if (!details) {
-      return response.error({ msgCode: req.t('OTP_EXPIRED') }, res, httpStatus.UNAUTHORIZED, dbTrans);
+      return response.error({req, res, msgCode: req.t('OTP_EXPIRED') },httpStatus.UNAUTHORIZED, dbTrans);
     }
     const check = passwordHash.comparePassword(otp, details.otp)
     if (!check) {
-      return response.error({ msgCode: req.t('INVALID_OTP') }, res, httpStatus.UNAUTHORIZED, dbTrans);
+      return response.error({req, res, msgCode: req.t('INVALID_OTP') }, httpStatus.UNAUTHORIZED, dbTrans);
     }
     const token = authJwt.generateAuthJwt({
       email: email,
@@ -191,11 +191,11 @@ exports.verifyOtp = async (req, res, next) => {
     });
 
     if (!token) {
-      return response.error({ msgCode: req.t('EMAIL_v_FAILED') }, res, httpStatus.FORBIDDEN, dbTrans);
+      return response.error({ req, res, msgCode: req.t('EMAIL_v_FAILED') }, httpStatus.FORBIDDEN, dbTrans);
     }
     const deleteOtp = await commonService.deleteQuery(Otp, condition, dbTrans, true)
     if (!deleteOtp) {
-      return response.error({ msgCode: req.t('EMAIL_v_FAILED') }, res, httpStatus.FORBIDDEN, dbTrans);
+      return response.error({req, res, msgCode: req.t('EMAIL_v_FAILED') }, httpStatus.FORBIDDEN, dbTrans);
 
     }
 
@@ -212,11 +212,11 @@ exports.verifyOtp = async (req, res, next) => {
       Token: token
     }
     const msgCode = req.t('EMAIL_VERIFIED')
-    return response.success({ msgCode, data }, res, httpStatus.ACCEPTED, dbTrans);
+    return response.success({req, res, msgCode, data }, httpStatus.ACCEPTED, dbTrans);
 
   } catch (error) {
     console.log(error);
-    return response.error({ msgCode: req.t('INTERNAL_SERVER_ERROR') }, res, httpStatus.INTERNAL_SERVER_ERROR, dbTrans);
+    return response.error({req, res, msgCode: req.t('INTERNAL_SERVER_ERROR') }, httpStatus.INTERNAL_SERVER_ERROR, dbTrans);
 
   }
 }
@@ -228,7 +228,7 @@ exports.resetpassword = async (req, res) => {
     const { new_password } = req.body;
     const { ...tokenData } = req.token
     if (!tokenData.is_verified) {
-      return response.error({ msgCode: req.t('INVALID_TOKEN') }, res, httpStatus.UNAUTHORIZED, dbTrans);
+      return response.error({ req, res, msgCode: req.t('INVALID_TOKEN') }, httpStatus.UNAUTHORIZED, dbTrans);
     }
     const updateCondition = { email: tokenData.email };
     const hashPassword = await passwordHash.generateHash(new_password);
@@ -238,12 +238,12 @@ exports.resetpassword = async (req, res) => {
     };
     const updateUser = await commonService.updateData(Auth, data, updateCondition)
     if (!updateUser) {
-      return response.error({ msgCode: req.t('UPDATE_ERROR') }, res, httpStatus.FORBIDDEN, dbTrans);
+      return response.error({req, res, msgCode: req.t('UPDATE_ERROR') }, httpStatus.FORBIDDEN, dbTrans);
     }
-    return response.success({ msgCode: req.t('PASSWORD_UPDATED') }, res, httpStatus.CREATED, dbTrans);
+    return response.success({req, res, msgCode: req.t('PASSWORD_UPDATED') }, httpStatus.CREATED, dbTrans);
   }
   catch (error) {
-    return response.error({ msgCode: req.t('INTERNAL_SERVER_ERROR') }, res, httpStatus.INTERNAL_SERVER_ERROR, dbTrans);
+    return response.error({req, res, msgCode: req.t('INTERNAL_SERVER_ERROR') }, httpStatus.INTERNAL_SERVER_ERROR, dbTrans);
 
   }
 
@@ -262,10 +262,10 @@ exports.isEmailExist = async (req, res, next) => {
     if (!checkUserExist) {
       return next();
     }
-    return response.error({ msgCode: req.t('ALREADY_REGISTERED') }, res, httpStatus.CONFLICT);
+    return response.error({req, res, msgCode: req.t('ALREADY_REGISTERED') }, httpStatus.CONFLICT);
   }
   catch (err) {
-    return response.error({ msgCode: req.t('INTERNAL_SERVER_ERROR') }, res, httpStatus.INTERNAL_SERVER_ERROR);
+    return response.error({req, res, msgCode: req.t('INTERNAL_SERVER_ERROR') }, httpStatus.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -278,9 +278,9 @@ exports.isPhoneExist = async (req, res, next) => {
     const condition = { country_code, phone_no }
     const checkPhone = await commonService.findByCondition(Auth, condition)
     if (!checkPhone) { return next() }
-    return response.error({ msgCode: req.t('ALREADY_REGISTERED') }, res, httpStatus.CONFLICT);
+    return response.error({req, res, msgCode: req.t('ALREADY_REGISTERED') }, httpStatus.CONFLICT);
   } catch (error) {
-    return response.error({ msgCode: req.t('INTERNAL_SERVER_ERROR') }, res, httpStatus.INTERNAL_SERVER_ERROR);
+    return response.error({req, res, msgCode: req.t('INTERNAL_SERVER_ERROR') }, httpStatus.INTERNAL_SERVER_ERROR);
 
   }
 }
@@ -294,12 +294,12 @@ exports.isUserExist = async (req, res, next) => {
     const condition = { email: email.toLowerCase() };
     const checkUserExist = await commonService.findByCondition(Auth, condition)
     if (!checkUserExist) {
-      return response.error({ msgCode: req.t('UNAUTHORIZED') }, res, httpStatus.UNAUTHORIZED);
+      return response.error({req, res, msgCode: req.t('UNAUTHORIZED') }, httpStatus.UNAUTHORIZED);
     }
     return next();
   }
   catch (err) {
-    return response.error({ msgCode: req.t('INTERNAL_SERVER_ERROR') }, res, httpStatus.INTERNAL_SERVER_ERROR);
+    return response.error({req, res, msgCode: req.t('INTERNAL_SERVER_ERROR') }, httpStatus.INTERNAL_SERVER_ERROR);
 
   }
 };
@@ -318,7 +318,7 @@ exports.changePassword = async (req, res) => {
     const condition = { id: tokenData.id }
     const userDetails = await commonService.findByCondition(Auth, condition)
     if (!userDetails) {
-      return response.error({ msgCode: req.t('UPDATE_ERROR') }, res, httpStatus.FORBIDDEN, dbTrans);
+      return response.error({req, res, msgCode: req.t('UPDATE_ERROR') }, httpStatus.FORBIDDEN, dbTrans);
 
     }
     // check old password is correct or not
@@ -326,7 +326,7 @@ exports.changePassword = async (req, res) => {
     if (!check) {
 
       // await dbTrans.rollback();
-      return response.error({ msgCode: req.t('WRONG_PASS') }, res, httpStatus.UNAUTHORIZED, dbTrans);
+      return response.error({req, res, msgCode: req.t('WRONG_PASS') }, httpStatus.UNAUTHORIZED, dbTrans);
     }
     const hashPassword = await passwordHash.generateHash(new_password);
     const data = {
@@ -335,7 +335,7 @@ exports.changePassword = async (req, res) => {
     const updateUser = await commonService.updateData(Auth, data, condition)
     if (!updateUser) {
       // await dbTrans.rollback();
-      return response.error({ msgCode: req.t('UPDATE_ERROR') }, res, httpStatus.FORBIDDEN, dbTrans);
+      return response.error({req, res, msgCode: req.t('UPDATE_ERROR') }, httpStatus.FORBIDDEN, dbTrans);
     }
 
     // if user want to logout all other device than pass logout true
@@ -348,11 +348,11 @@ exports.changePassword = async (req, res) => {
     }
 
     // await dbTrans.commit();
-    return response.success({ msgCode: req.t('PASSWORD_UPDATED') }, res, httpStatus.OK, dbTrans);
+    return response.success({req, res, msgCode: req.t('PASSWORD_UPDATED') }, httpStatus.OK, dbTrans);
 
 
   } catch (error) {
-    return response.error({ msgCode: req.t('INTERNAL_SERVER_ERROR') }, res, httpStatus.INTERNAL_SERVER_ERROR, dbTrans);
+    return response.error({req, res, msgCode: req.t('INTERNAL_SERVER_ERROR') }, httpStatus.INTERNAL_SERVER_ERROR, dbTrans);
 
   }
 }
@@ -370,13 +370,13 @@ exports.logout = async (req, res) => {
     const { session } = await db.sequelize.models;
     const destroySession = await commonService.deleteQuery(session, condition, dbTrans, true)
     if (!destroySession) {
-      return response.error({ msgCode: req.t('USER_NOT_FOUND') }, res, httpStatus.INTERNAL_SERVER_ERROR, dbTrans);
+      return response.error({req, res, msgCode: req.t('USER_NOT_FOUND') }, httpStatus.INTERNAL_SERVER_ERROR, dbTrans);
     }
-    return response.success({ msgCode: req.t('LOGOUT_SUCCESSFUL'), data: null }, res, httpStatus.OK, dbTrans);
+    return response.success({req, res, msgCode: req.t('LOGOUT_SUCCESSFUL'), data: null }, httpStatus.OK, dbTrans);
   }
   catch (err) {
 
-    return response.error({ msgCode: req.t('INTERNAL_SERVER_ERROR') }, res, httpStatus.INTERNAL_SERVER_ERROR, dbTrans);
+    return response.error({req, res, msgCode: req.t('INTERNAL_SERVER_ERROR') }, httpStatus.INTERNAL_SERVER_ERROR, dbTrans);
   }
 };
 

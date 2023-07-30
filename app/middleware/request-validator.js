@@ -12,8 +12,7 @@ const validate = (schema, source = 'body') => async (req, res, next) => {
         const { details } = error;
         const message = details.map((i) => i.message).join(',');
         return response.error(
-            { msgCode: req.t('VALIDATION_ERROR'), data: message },
-            res,
+            {req, res, msgCode: req.t('VALIDATION_ERROR'), data: message },
             httpStatus.BAD_REQUEST
         );
     }

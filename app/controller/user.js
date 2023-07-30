@@ -21,11 +21,11 @@ const userBasicDetail = async( req,res)=>{
         const condition= {
             email: email_add
         }
-        const imgArray= [req.files].map((el) => Object.entries(el));
-        const image= await saveMUltipleImageInS3(imgArray[0])
+        // const imgArray= [req.files].map((el) => Object.entries(el));
+        // const image= await saveMUltipleImageInS3(imgArray[0])
         const findUser= await commonService.findByCondition(AUTH,condition )
         if(findUser){
-            return response.error(req, res, { msgCode: 'DEPARTMENT_ALREADY_EXIST' }, httpStatus.CONFLICT, dbTrans);
+            return response.error(req, res, { msgCode: 'EMAIL_ALREADY_EXISTS' }, httpStatus.CONFLICT, dbTrans);
         }
 
         const authDataTosave= {
