@@ -8,6 +8,7 @@ const { errorHandler } = require("./app/middleware");
 const i18next = require('i18next')
 const backend = require('i18next-fs-backend')
 const middleware = require('i18next-http-middleware')
+const formidable = require('express-formidable');
 i18next.use(backend).use(middleware.LanguageDetector)
   .init({
     fallbackLng: 'en',
@@ -22,7 +23,7 @@ const path = require("path");
 require('dotenv').config();
 
 const app = express();
-// const path = require('path');
+
 app.use(middleware.handle(i18next))
 app.set(path.join(__dirname));
 app.use(express.static(__dirname))
@@ -53,6 +54,9 @@ app.use((req, res, next) => {
 
 app.use(bodyParser.json({ limit: "2mb" }));
 app.use(bodyParser.urlencoded({ extended: true }));
+
+app.use(formidable());
+app.use(express.static('public'));
 
 const httpServer = http
   .createServer(app.handle.bind(app))

@@ -2,7 +2,7 @@
 const {
   Model
 } = require('sequelize');
-const {enum_data}=require("../constents/index")
+const {enum_data}=require("../../app/constents/index")
 module.exports = (sequelize, DataTypes) => {
   class auth extends Model {
     /**
@@ -31,7 +31,7 @@ module.exports = (sequelize, DataTypes) => {
     },
   }, {
     sequelize,
-    modelName: 'auth',
+    modelName: 'auths',
   });
   return auth;
 };

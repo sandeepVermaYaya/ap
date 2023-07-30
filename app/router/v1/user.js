@@ -7,5 +7,5 @@ const { routes } = require("../../constents/index")
 
 router.post(`/${routes.USER.USER_BASIC_DETAIL}`,  controller.userBasicDetail);
 router.post(`/${routes.USER.USER_DSP_DETAIL}`,  controller.userDspDetail);
-
+router.post(`/${routes.USER.USER_SOC_DETAIL}`,  controller.userSocDetail);
 module.exports= router;

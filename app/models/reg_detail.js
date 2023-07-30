@@ -5,13 +5,9 @@ const {
 const {enum_data}=require("../constents/index")
 module.exports = (sequelize, DataTypes) => {
   class reg_detail extends Model {
-    /**
-     * Helper method for defining associations.
-     * This method is not a part of DataTypes lifecycle.
-     * The `models/index` file will call this method automatically.
-     */
     static associate(models) {
-      // define association here
+      models.auths.hasMany(reg_detail, { foreignKey: 'auth_id', as: 'authId' });
+      models.auths.hasMany(reg_detail, { foreignKey: 'created_by', as: 'createdBy' });
     }
   }
   reg_detail.init({
@@ -44,10 +40,6 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING
     },
     gstin:
-    {
-      type: DataTypes.STRING
-    },
-    email_add:
     {
       type: DataTypes.STRING
     },
@@ -97,7 +89,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   }, {
     sequelize,
-    modelName: 'reg_detail',
+    modelName: 'reg_details',
   });
   return reg_detail;
 };

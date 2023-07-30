@@ -3,13 +3,13 @@ module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable('sessions', {
       id: {
-        type: Sequelize.UUID,
-        primaryKey: true,
         allowNull: false,
-        defaultValue: Sequelize.uuidv4
+        autoIncrement: true,
+        primaryKey: true,
+        type: Sequelize.INTEGER
       },
       auth_id: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
         references: {
           model: "auths",
           key: "id"

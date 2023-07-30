@@ -87,12 +87,18 @@ module.exports = {
       },
       created_by:
       {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
           references: {
             model: 'auths',
             key: 'id'
           },
       },
+      auth_id:{ type: Sequelize.INTEGER,
+          references: {
+            model: 'auths',
+            key: 'id'
+          },
+    },
       createdAt: {
               allowNull: false,
               type: Sequelize.DATE

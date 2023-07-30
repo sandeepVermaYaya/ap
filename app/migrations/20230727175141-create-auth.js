@@ -1,4 +1,5 @@
 const { v4: uuidv4 } = require('uuid');
+const { enum_data } = require('../constents');
 // const { sequelize } = require('../models');
 
 'use strict';
@@ -6,11 +7,20 @@ module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable('auths', {
       id: {
-        type: Sequelize.UUID,
-        primaryKey: true,
         allowNull: false,
-        defaultValue: Sequelize.uuidv4
+        autoIncrement: true,
+        primaryKey: true,
+        type: Sequelize.INTEGER
 
+      },
+      reg_type: {
+        type: Sequelize.ENUM(
+          enum_data.registration_type.AGGREGATOR,
+          enum_data.registration_type.ARTIST,
+          enum_data.registration_type.LABEL,
+          enum_data.registration_type.SONG_WRITER
+        ),
+        defaultValue: null
       },
       email: {
         type: Sequelize.STRING

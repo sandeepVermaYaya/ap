@@ -17,7 +17,7 @@ exports.methodNotAllowed = (req, res) => {
 
 // Generic error response middleware for validation and internal server errors.
 exports.genericErrorHandler = (err, req, res, next) => {
-  token
+  // token
   let error;
   console.log(err);
   if (err.isJoi) {

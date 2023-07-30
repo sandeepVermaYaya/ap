@@ -2,7 +2,7 @@
 const response = require('../response/index');
 const httpStatus = require('http-status');
 const db = require('../models/index');
-const { auths: AUTH, reg_detail: REG_DETAIL } = db.sequelize.models;
+const { auths: AUTH, reg_details: REG_DETAIL, reg_dsps: REG_DSP, reg_socs: REG_SOC } = db.sequelize.models;
 const commonService = require('../services/common');
 const { generateRandomPass } = require('../utils/password');
 const { enum_data } = require('../constents/index');
@@ -12,61 +12,57 @@ const helper = require('../utils/helper');
 const moment = require('moment');
 const multiparty = require('multiparty');
 const {status}= require('../constents/index')
-
+const {saveMUltipleImageInS3}= require('../utils/imageUpload')
 
 const userBasicDetail = async( req,res)=>{
     const dbTrans = await db.sequelize.transaction();
     try{
-        const form = new multiparty.Form();
-        let dataFields;
-        form.parse(req, function(err, fields, files) {
-            dataFields=fields;
-            console.log("===========", dataFields.restrd_nm[0])
-          });
-        // let { reg_type[0], restrd_nm, ref_cd,public_reg_nm,category,cpp_id,pan_card,gstin,email_add,crrnt_addrs,rgstrd_addrs,whtsapp_nmbr,ph_number,poc_full_name,poc_dsgntn,poc_ph_nmbr,poc_email,poc_aadhar,poc_crrnt_addrs,agg_type,created_by } = dataFields;
+        let { reg_type, restrd_nm, ref_cd,public_reg_nm,category,cpp_id,pan_card,gstin,email_add,crrnt_addrs,rgstrd_addrs,whtsapp_nmbr,ph_number,poc_full_name,poc_dsgntn,poc_ph_nmbr,poc_email,poc_aadhar,poc_crrnt_addrs,agg_type,created_by } =req.fields;
         const condition= {
-            email: dataFields.email_add[0]
+            email: email_add
         }
+        const imgArray= [req.files].map((el) => Object.entries(el));
+        const image= await saveMUltipleImageInS3(imgArray[0])
         const findUser= await commonService.findByCondition(AUTH,condition )
         if(findUser){
             return response.error(req, res, { msgCode: 'DEPARTMENT_ALREADY_EXIST' }, httpStatus.CONFLICT, dbTrans);
         }
+
         const authDataTosave= {
-            email:dataFields.email_add[0],
-            reg_type: dataFields.reg_type[0],
-            is_email_verified: status.PENDING
+            email:email_add,
+            reg_type: reg_type,
+            is_email_verified: false
         }
-        const authData= commonService.addDetail(AUTH, authDataTosave, dbTrans);
+        const authData= await commonService.addDetail(AUTH, authDataTosave, dbTrans);
         if(!authData){
             return response.error(req, res, { msgCode: 'INTERNAL_SERVER_ERROR' }, httpStatus.INTERNAL_SERVER_ERROR, dbTrans);
 
         }
         const objOTsave={
-            restrd_nm:dataFields.restrd_nm[0],
-              ref_cd:dataFields.ref_cd[0],
-            //   public_reg_nm,
-            //   category,
-            //   cpp_id,
-            //   pan_card,
-            //   gstin,
-            //   email_add,
-            //   crrnt_addrs,
-            //   rgstrd_addrs,
-            //   whtsapp_nmbr,
-            //   ph_number,
-            //   poc_full_name,
-            //   poc_dsgntn,
-            //   poc_ph_nmbr,
-            //   poc_email,
-            //   poc_aadhar,
-            //   poc_crrnt_addrs,
-            //   agg_type,
-            //   created_by,
-            //   auth_id: authData.id
+            restrd_nm:restrd_nm,
+              ref_cd:ref_cd,
+              public_reg_nm,
+              category,
+              cpp_id,
+              pan_card,
+              gstin,
+              crrnt_addrs,
+              rgstrd_addrs,
+              whtsapp_nmbr,
+              ph_number,
+              poc_full_name,
+              poc_dsgntn,
+              poc_ph_nmbr,
+              poc_email,
+              poc_aadhar,
+              poc_crrnt_addrs,
+              agg_type:[agg_type],
+              created_by,
+              auth_id: authData.id
         }
-        const userDetail= commonService.addDetail(REG_DETAIL, objOTsave, dbTrans);
+        const userDetail= await commonService.addDetail(REG_DETAIL, objOTsave, dbTrans);
         data = {authData, userDetail}
-        return response.success(req, res, { msgCode, data }, httpStatus.OK, dbTrans);
+        return response.success(req, res, {msgCode: "BASIC_DETAL_ADDED", data:'data' }, httpStatus.OK, dbTrans);
 
     }catch(err){
         return response.error(req, res, { msgCode: 'INTERNAL_SERVER_ERROR' }, httpStatus.INTERNAL_SERVER_ERROR, dbTrans);
@@ -77,18 +73,51 @@ const userBasicDetail = async( req,res)=>{
 const userDspDetail= async(req,res)=>{
     const dbTrans = await db.sequelize.transaction();
     try{
-        const form = new multiparty.Form();
-        let dataFields;
-        form.parse(req, function(err, fields, files) {
-            dataFields=fields;
-          });
+        const { bulk_data}= req.files;
+        let {...dsp_data} = req.fields;
+        dsp_data=[dsp_data]
+        const auth_id= dsp_data[0].auth_id
+        if(bulk_data !== undefined){
+            const iteration = ['ref_cd','public_reg_nm','artist_nm','apple', 'amazon_music','gaana', 'jiosaavn', 'spotify', 'wynk', 'yt_music', 'yt_channel'  ]
+           dsp_data = await helper.fileReader(bulk_data,iteration);
+            dsp_data.map(d=>{
+                d.auth_id=auth_id;
+            })
+
         }
+        const data= await commonService.addBulkData(REG_DSP, dsp_data,dbTrans);
+        return response.success(req, res, {msgCode: "DSP_DETAL_ADDED", data }, httpStatus.OK, dbTrans);
+
+    }
     catch(err){
         return response.error(req, res, { msgCode: 'INTERNAL_SERVER_ERROR' }, httpStatus.INTERNAL_SERVER_ERROR, dbTrans);
     }
 }
+const userSocDetail= async(req,res)=>{
+    const dbTrans = await db.sequelize.transaction();
+    try{
+        const { bulk_data}= req.files;
+        let {...soc_data} = req.fields;
+        soc_data=[soc_data]
+        const auth_id= soc_data[0].auth_id
 
+        if(bulk_data !== undefined){
+            const iteration = ['ref_cd','public_reg_nm','accnt_typ','accnt_nm', 'instagram','facebook', 'linkedin', 'twitter', 'wikipedia']
+            dsp_data = await helper.fileReader(bulk_data,iteration);
+            dsp_data.map(d => {
+                d.auth_id = auth_id;
+            })
+        }
+        const addData= await commonService.addDetail(REG_SOC, data,dbTrans);
+        return response.success(req, res, {msgCode: "SOCIAL_DETAL_ADDED", data }, httpStatus.OK, dbTrans);
+
+    }
+    catch(err){
+        return response.error(req, res, { msgCode: 'INTERNAL_SERVER_ERROR' }, httpStatus.INTERNAL_SERVER_ERROR, dbTrans);
+    }
+}
 module.exports={
     userBasicDetail,
-    userDspDetail
+    userDspDetail,
+    userSocDetail
 }

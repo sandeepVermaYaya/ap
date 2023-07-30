@@ -1,4 +1,7 @@
 {
+  "BASIC_DETAL_ADDED": "basic detail added successfully",
+  "DSP_DETAL_ADDED": "dsp detail added successfully",
+  "SOCIAL_DETAL_ADDED": "social detail added successfully",
   "SIGNUP_SUCCESSFUL": "ser registered successfully",
   "LOGIN_SUCCESSFUL": "User logged in successfully",
   "USER_REGISTERED_LOGIN": "User registered successfully. Please login to verify your account.",

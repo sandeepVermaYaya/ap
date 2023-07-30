@@ -120,3 +120,16 @@ exports.getAuthDetail = async (model, condition) => {
 
     }
 }
+
+exports.addBulkData = async (model, data, transaction) => {
+    try {
+        //   console.log(data);
+        const addDetailInfo = await model.bulkCreate(data, { transaction });
+
+        return addDetailInfo ? JSON.parse(JSON.stringify(addDetailInfo)) : false;
+    }
+    catch (error) {
+        console.error('AddAuthDetail>>>>>>>>>', error);
+        return false;
+    }
+};

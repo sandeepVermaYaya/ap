@@ -6,13 +6,9 @@ const {enum_data}=require("../constents/index")
 
 module.exports = (sequelize, DataTypes) => {
   class reg_soc extends Model {
-    /**
-     * Helper method for defining associations.
-     * This method is not a part of DataTypes lifecycle.
-     * The `models/index` file will call this method automatically.
-     */
     static associate(models) {
-      // define association here
+      models.auths.hasMany(reg_soc, { foreignKey: 'auth_id', as: 'AuthID' });
+      models.auths.hasMany(reg_soc, { foreignKey: 'created_by', as: 'CreatedBy' });
     }
   }
   reg_soc.init({
@@ -50,7 +46,7 @@ module.exports = (sequelize, DataTypes) => {
     },
   }, {
     sequelize,
-    modelName: 'reg_soc',
+    modelName: 'reg_socs',
   });
   return reg_soc;
 };

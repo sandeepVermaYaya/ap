@@ -4,13 +4,9 @@ const {
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class reg_dsp extends Model {
-    /**
-     * Helper method for defining associations.
-     * This method is not a part of DataTypes lifecycle.
-     * The `models/index` file will call this method automatically.
-     */
     static associate(models) {
-      // define association here
+      models.auths.hasMany(reg_dsp, { foreignKey: 'auth_id', as: 'auth_Id' });
+      models.auths.hasMany(reg_dsp, { foreignKey: 'created_by', as: 'created_By' });
     }
   }
   reg_dsp.init({
@@ -58,7 +54,7 @@ module.exports = (sequelize, DataTypes) => {
       }
   }, {
     sequelize,
-    modelName: 'reg_dsp',
+    modelName: 'reg_dsps',
   });
   return reg_dsp;
 };

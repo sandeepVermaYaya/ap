@@ -1,50 +1,54 @@
 'use strict';
-
+const {enum_data}=require("../constents/index")
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('reg_dsps', {
+    await queryInterface.createTable('reg_socs', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      ref_cd:
-      {
+      ref_cd:{
         type: Sequelize.STRING
       },
       public_reg_nm:{
         type: Sequelize.STRING
       },
-      artist_nm:{
+      accnt_typ:{
+        type: Sequelize.ENUM(
+          enum_data.registration_type.AGGREGATOR,
+          enum_data.registration_type.ARTIST,
+          enum_data.registration_type.LABEL,
+          enum_data.registration_type.SONG_WRITER
+        )
+      },
+      accnt_nm:{
         type: Sequelize.STRING
       },
-      apple:{
+      instagram:{
         type: Sequelize.STRING
       },
-      amazon_music:{
+      facebook:{
         type: Sequelize.STRING
       },
-      gaana:{
+      linkedin:{
         type: Sequelize.STRING
       },
-      jiosaavn:{
+      twitter:{
         type: Sequelize.STRING
       },
-      spotify:{
-        type: Sequelize.STRING
-      },
-      wynk:{
-        type: Sequelize.STRING
-      },
-      yt_music:{
-        type: Sequelize.STRING
-      },
-      yt_channel:{
+      wikipedia:{
         type: Sequelize.STRING
       },
       created_by:{
-        type:  Sequelize.UUID,
+        type: Sequelize.INTEGER,
+        references: {
+          model: 'auths',
+          key: 'id'
+        },
+      }, 
+      auth_id:{ type: Sequelize.INTEGER,
         references: {
           model: 'auths',
           key: 'id'
@@ -61,6 +65,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('reg_dsps');
+    await queryInterface.dropTable('reg_socs');
   }
 };

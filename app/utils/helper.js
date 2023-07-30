@@ -78,3 +78,24 @@ exports.convertLocalToUTC = (dt, dtFormat) => {
 exports.convertUTCToTimezone = (utcDt, utcDtFormat, timezone) => {
     return moment.utc(utcDt, utcDtFormat).tz(timezone).format('YYYY-MM-DD hh:mm:ss A');
 }
+
+const xlsx = require('xlsx');             // Step 1
+
+exports.fileReader = async (data,iteration, workbook_response) => {
+    const workbook = xlsx.readFile(data.path); 
+    let workbook_sheet = workbook.SheetNames;    
+    // convert in to json
+    let workbook_data = xlsx.utils.sheet_to_json(  
+      workbook.Sheets[workbook_sheet[0]]
+    );
+    // chnage column name 
+    const ws = xlsx.utils.book_new();
+    xlsx.utils.sheet_add_aoa(ws, [iteration]);
+    const workbook_add= xlsx.utils.sheet_add_json(ws, workbook_data, { origin: 'A2', skipHeader: true });
+   
+    // convert in to json
+    workbook_response = xlsx.utils.sheet_to_json(
+      workbook_add
+    );
+    return workbook_response;
+  }
