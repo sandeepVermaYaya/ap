@@ -62,7 +62,7 @@ const userBasicDetail = async( req,res)=>{
         }
         const userDetail= await commonService.addDetail(REG_DETAIL, objOTsave, dbTrans);
         data = {authData, userDetail}
-        return response.success(req, res, {msgCode: "BASIC_DETAL_ADDED", data:'data' }, httpStatus.OK, dbTrans);
+        return response.success(req, res, {msgCode: "BASIC_DETAL_ADDED", data }, httpStatus.OK, dbTrans);
 
     }catch(err){
         return response.error(req, res, { msgCode: 'INTERNAL_SERVER_ERROR' }, httpStatus.INTERNAL_SERVER_ERROR, dbTrans);

@@ -5,14 +5,14 @@ const response = require('../response/index');
 // Error response middleware for 404 not found.
 exports.notFound = (req, res) => {
 
-  return response.error({ msgCode: req.t('NOT_FOUND') }, res, HttpStatus.NOT_FOUND)
+  return response.error({req, res, msgCode: req.t('NOT_FOUND') }, HttpStatus.NOT_FOUND)
 
 };
 
 // Method not allowed error middleware.
 exports.methodNotAllowed = (req, res) => {
 
-  return response.error({ msgCode: req.t('INVALID_ROUTE') }, res, HttpStatus.METHOD_NOT_ALLOWED)
+  return response.error({req, res, msgCode: req.t('INVALID_ROUTE') }, HttpStatus.METHOD_NOT_ALLOWED)
 };
 
 // Generic error response middleware for validation and internal server errors.
@@ -59,5 +59,5 @@ exports.genericErrorHandler = (err, req, res, next) => {
   //
 
   // res.status(error.code).json({ error });
-  return response.error({ msgCode: req.t(error.message) }, res, error.code)
+  return response.error({req, res, msgCode: req.t(error.message) }, error.code)
 };

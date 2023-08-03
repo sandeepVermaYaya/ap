@@ -10,17 +10,17 @@ exports.verifyApiKey = (req, res, next) => {
     try {
         let ApiKey = req.headers["x-api-key"];
         if (!ApiKey) {
-            return response.error({ msgCode: req.t('MISSING_API_KEY') }, res, httpStatus.UNAUTHORIZED);
+            return response.error({req, res, msgCode: req.t('MISSING_API_KEY') }, httpStatus.UNAUTHORIZED);
         }
         console.log('api key', ApiKey);
 
         if (ApiKey != process.env.API_KEY) {
-            return response.error({ msgCode: req.t('INVALID_API_KEY') }, res, httpStatus.UNAUTHORIZED)
+            return response.error({req, res, msgCode: req.t('INVALID_API_KEY') }, httpStatus.UNAUTHORIZED)
 
         }
         return next();
     } catch (error) {
-        return response.error({ msgCode: req.t('INTERNAL_SERVER_ERROR') }, res, httpStatus.INTERNAL_SERVER_ERROR)
+        return response.error({req, res, msgCode: req.t('INTERNAL_SERVER_ERROR') }, httpStatus.INTERNAL_SERVER_ERROR)
 
     }
 }
@@ -43,19 +43,19 @@ exports.verifyAuthToken = (req, res, next) => {
     try {
         let token = req.headers["authorization"];
         if (!token) {
-            return response.error({ msgCode: req.t('MISSING_TOKEN') }, res, httpStatus.UNAUTHORIZED);
+            return response.error({req, res, msgCode: req.t('MISSING_TOKEN') }, httpStatus.UNAUTHORIZED);
         }
         token = token.replace(/^Bearer\s+/, "")
 
         jwt.verify(token, process.env.SECRET_KEY, async (error, decoded) => {
             if (error) {
-                return response.error({ msgCode: req.t('TOKEN_EXPIRED') }, res, httpStatus.UNAUTHORIZED)
+                return response.error({req, res, msgCode: req.t('TOKEN_EXPIRED') }, httpStatus.UNAUTHORIZED)
             }
             const { Session } = await db.sequelize.models;
             const condition = { jwt_token: token }
             const checkJwt = await commonService.getAuthDetail(Session, condition)
             if (!checkJwt) {
-                return response.error({ msgCode: req.t('INVALID_TOKEN') }, res, httpStatus.UNAUTHORIZED)
+                return response.error({req, res, msgCode: req.t('INVALID_TOKEN') }, httpStatus.UNAUTHORIZED)
             }
             else {
                 req.data = decoded;
@@ -65,7 +65,7 @@ exports.verifyAuthToken = (req, res, next) => {
     }
     catch (err) {
         console.log(err);
-        return response.error({ msgCode: req.t('INTERNAL_SERVER_ERROR') }, res, httpStatus.INTERNAL_SERVER_ERROR)
+        return response.error({req, res, msgCode: req.t('INTERNAL_SERVER_ERROR') }, res, httpStatus.INTERNAL_SERVER_ERROR)
     }
 };
 
@@ -75,7 +75,7 @@ exports.isCompany = (req, res, next) => {
     try {
         const jwtData = req.data;
         if (jwtData.user_type !== constant.user_type.COMPANY) {
-            return response.success({ msgCode: req.t('UNAUTHORIZED') }, res, httpStatus.UNAUTHORIZED);
+            return response.success({req, res, msgCode: req.t('UNAUTHORIZED') }, httpStatus.UNAUTHORIZED);
         }
         else {
             req.data = jwtData;
@@ -83,7 +83,7 @@ exports.isCompany = (req, res, next) => {
         }
     }
     catch (err) {
-        return response.error({ msgCode: req.t('INTERNAL_SERVER_ERROR') }, res, httpStatus.INTERNAL_SERVER_ERROR)
+        return response.error({req, res, msgCode: req.t('INTERNAL_SERVER_ERROR') },  httpStatus.INTERNAL_SERVER_ERROR)
 
     }
 };
@@ -94,7 +94,7 @@ exports.isAdmin = (req, res, next) => {
         // check role
         const jwtData = req.data;
         if (jwtData.user_type !== constant.user_type.ADMIN) {
-            return response.success({ msgCode: req.t('UNAUTHORIZED') }, res, httpStatus.UNAUTHORIZED);
+            return response.success({req, res, msgCode: req.t('UNAUTHORIZED') }, httpStatus.UNAUTHORIZED);
         }
         else {
             req.data = jwtData;
@@ -102,7 +102,7 @@ exports.isAdmin = (req, res, next) => {
         }
     }
     catch (err) {
-        return response.error({ msgCode: req.t('INTERNAL_SERVER_ERROR') }, res, httpStatus.INTERNAL_SERVER_ERROR)
+        return response.error({req, res, msgCode: req.t('INTERNAL_SERVER_ERROR') }, httpStatus.INTERNAL_SERVER_ERROR)
 
     }
 };
@@ -111,18 +111,18 @@ exports.verifyToken = (req, res, next) => {
     try {
         let token = req.headers.token
         if (!token) {
-            return response.error({ msgCode: req.t('MISSING_TOKEN') }, res, httpStatus.UNAUTHORIZED);
+            return response.error({req, res, msgCode: req.t('MISSING_TOKEN') }, httpStatus.UNAUTHORIZED);
         }
         jwt.verify(token, process.env.SECRET_KEY, async (error, decoded) => {
             console.log(error);
             if (error) {
-                return response.error({ msgCode: req.t('TOKEN_EXPIRED') }, res, httpStatus.UNAUTHORIZED)
+                return response.error({req, res, msgCode: req.t('TOKEN_EXPIRED') }, httpStatus.UNAUTHORIZED)
             }
             req.token = decoded;
             return next();
         })
     } catch (err) {
-        return response.error({ msgCode: req.t('INTERNAL_SERVER_ERROR') }, res, httpStatus.INTERNAL_SERVER_ERROR)
+        return response.error({req, res, msgCode: req.t('INTERNAL_SERVER_ERROR') }, httpStatus.INTERNAL_SERVER_ERROR)
 
     }
 }
