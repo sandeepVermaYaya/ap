@@ -35,10 +35,17 @@ module.exports = (sequelize, DataTypes) => {
     {
       type: DataTypes.STRING
     },
-    pan_card:
+    cpp_image:{
+      type: DataTypes.STRING
+    },
+    pan_card_no:
     {
       type: DataTypes.STRING
     },
+    pan_card_image:
+      {
+        type: DataTypes.STRING
+      },
     gstin:
     {
       type: DataTypes.STRING

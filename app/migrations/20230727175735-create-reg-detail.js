@@ -33,7 +33,14 @@ module.exports = {
       {
         type: Sequelize.STRING
       },
-      pan_card:
+      cpp_image:{
+        type: Sequelize.STRING
+      },
+      pan_card_no:
+      {
+        type: Sequelize.STRING
+      },
+      pan_card_image:
       {
         type: Sequelize.STRING
       },
