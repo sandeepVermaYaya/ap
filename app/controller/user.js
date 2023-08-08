@@ -17,7 +17,7 @@ const {saveMUltipleImageInS3}= require('../utils/imageUpload');
 const userBasicDetail = async( req,res)=>{
     const dbTrans = await db.sequelize.transaction();
     try{
-        let { reg_type, restrd_nm, ref_cd,public_reg_nm,category,cpp_id,pan_card_no,gstin,email_add,crrnt_addrs,rgstrd_addrs,whtsapp_nmbr,ph_number,poc_full_name,poc_dsgntn,poc_ph_nmbr,poc_email,poc_aadhar,poc_crrnt_addrs,agg_type,created_by } =req.fields;
+        let { reg_type, restrd_nm, ref_cd,public_reg_nm,category,cpp_id,pan_card,gstin,email_add,crrnt_addrs,rgstrd_addrs,whtsapp_nmbr,ph_number,poc_full_name,poc_dsgntn,poc_ph_nmbr,poc_email,poc_aadhar,poc_crrnt_addrs,agg_type,created_by } =req.fields;
         const condition= {
             email: email_add
         }
@@ -44,9 +44,9 @@ const userBasicDetail = async( req,res)=>{
               public_reg_nm,
               category,
               cpp_id,
-              cpp_image : null,
-              pan_card_no,
-              pan_card_image: null ,
+              cpp_link : null,
+              pan_card,
+              pan_card_link: null ,
               gstin,
               crrnt_addrs,
               rgstrd_addrs,

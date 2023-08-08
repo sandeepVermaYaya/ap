@@ -23,10 +23,27 @@ const status={
     ACTIVE:"active",
     VERIFIED:"verified",
     NOT_VERIFIED:'not verified',
-    PENDING: 'pending'
+    PENDING: 'pending',
+    COMPLETED: 'completed',
+    HOLD:'hold',
+    IN_PROGRESS:'in progress',
+    APPROVED: "approved"
 }
-
+const dashboard_type={
+    PRO:'pro',
+    BASIC: 'basic',
+    SONGWRITER_EXCLUSIVE:'songwriter exclusive',
+    ADVANCE:'advance',
+    ARTIST_EXCLUSIVE: 'artist exclusive'
+}
+const dashboard_status={
+    LOGGED_IN: 'logged in',
+    REQUESTED: 'requested',
+    HOLD: 'hold'
+}
 module.exports={
     enum_data,
-    status
+    status,
+    dashboard_type,
+    dashboard_status
 }
