@@ -87,7 +87,7 @@ const userDspDetail= async(req,res)=>{
             })
 
         }else{
-            JSON.parse(dsp_data.data).map(d=>{
+            dsp_data = JSON.parse(dsp_data.data).map(d=>{
                 d.auth_id=auth_id;
             })
         }
@@ -114,7 +114,7 @@ const userSocDetail= async(req,res)=>{
                 d.auth_id = auth_id;
             })
         }else{
-            JSON.parse(soc_data.data).map(d=>{
+           soc_data = JSON.parse(soc_data.data).map(d=>{
                 d.auth_id=auth_id;
             })
         }
