@@ -79,6 +79,11 @@ const userDspDetail= async(req,res)=>{
         let {...dsp_data} =req.fields;
         dsp_data=dsp_data
         const auth_id= dsp_data.auth_id
+        const findUser= await commonService.findByCondition(REG_DETAIL, { auth_id } )
+        if(!findUser){
+            return response.error(req, res, { msgCode: 'USER_NOT_FOND' }, httpStatus.NOT_FOUND, dbTrans);
+
+        }
         if(bulk_data !== undefined){
             const iteration = ['ref_cd','public_reg_nm','artist_nm','apple', 'amazon_music','gaana', 'jiosaavn', 'spotify', 'wynk', 'yt_music', 'yt_channel'  ]
            dsp_data = await helper.fileReader(bulk_data,iteration);
@@ -87,8 +92,11 @@ const userDspDetail= async(req,res)=>{
             })
 
         }else{
-            JSON.parse(dsp_data.data).map(d=>{
-                d.auth_id=auth_id;
+            dsp_data = JSON.parse(dsp_data.data).map(d=>{
+                d.auth_id = auth_id;
+                d.ref_cd = findUser.ref_cd;
+                d.public_reg_nm = findUser.public_reg_nm
+                return d
             })
         }
         const data= await commonService.addBulkData(REG_DSP, dsp_data,dbTrans);
@@ -106,7 +114,10 @@ const userSocDetail= async(req,res)=>{
         let {...soc_data} = req.fields;
         soc_data=soc_data
         const auth_id= soc_data.auth_id
-
+        const findUser= await commonService.findByCondition(REG_DETAIL, { auth_id } )
+        if(!findUser){
+            return response.error(req, res, { msgCode: 'USER_NOT_FOND' }, httpStatus.NOT_FOUND, dbTrans);
+        }
         if(bulk_data !== undefined){
             const iteration = ['ref_cd','public_reg_nm','accnt_typ','accnt_nm', 'instagram','facebook', 'linkedin', 'twitter', 'wikipedia']
             soc_data = await helper.fileReader(bulk_data,iteration);
@@ -114,12 +125,16 @@ const userSocDetail= async(req,res)=>{
                 d.auth_id = auth_id;
             })
         }else{
-            JSON.parse(soc_data.data).map(d=>{
+            soc_data = JSON.parse(soc_data.data).map(d=>{
                 d.auth_id=auth_id;
+                d.ref_cd = findUser.ref_cd;
+                d.public_reg_nm = findUser.public_reg_nm
+                return d
             })
+
         }
         
-        const data= await commonService.addDetail(REG_SOC, soc_data,dbTrans);
+        const data= await commonService.addBulkData(REG_SOC, soc_data,dbTrans);
         return response.success(req, res, {msgCode: "SOCIAL_DETAL_ADDED", data }, httpStatus.OK, dbTrans);
 
     }
