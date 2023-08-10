@@ -1,9 +1,12 @@
 const AWS = require("aws-sdk")
-
+const { env } = require('../constents/environment')
 const s3 = new AWS.S3({
-    region: process.env.AWS_REGION,
-    endpoint: `s3.${process.env.BUCKET_REGION}.amazonaws.com`,
-});
+    credentials: {
+        accessKeyId: env.AWS_ACCESS, // store it in .env file to keep it safe
+        secretAccessKey: env.AWS_SECRET
+    },
+    region: "ap-south-1" // this is the region that you select in AWS account
+})
 
 const saveImageInS3 = async(content, fileName, contentType) => {
     const params = {
@@ -34,12 +37,12 @@ const saveMUltipleImageInS3 = async(file, imgRes) => {
             let ext = element[1].name.split('.').pop()
             let newFileName = Date.now() + '.' + ext
             const params = {
-                // Bucket: process.env.BUCKET_NAME,
-                Key: 'interest/' + newFileName, // File name you want to save as in S3
-                Body: element[1],
+                Bucket: 'spbrother',
+                Key:  newFileName, // File name you want to save as in S3
+                Body: element[1].path,
                 ContentEncoding: 'base64',
                 ContentType: element[1].type ,
-                ACL: 'public-read'
+                // ACL: 'public-read'
             };
             // Uploading files to the bucket
             console.log("params===========================", params)

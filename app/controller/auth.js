@@ -88,7 +88,6 @@ exports.createSession = async (req, res) => {
       }
     }
     const sessionData = {
-      id: helper.genUUID(),
       auth_id: req.loginData.auth_details.id,
       device_id,
       device_token,
@@ -381,3 +380,55 @@ exports.logout = async (req, res) => {
 };
 
 
+exports.adminLogin = async (req, res, next) => {
+  const dbTrans = await db.sequelize.transaction();
+  try {
+    const { email, password, device_id, device_type, device_token } = req.body;
+
+    const checkUser = req.userData;
+    const validUser = passwordHash.comparePassword(password, checkUser.password);
+    if (!validUser) {
+      return response.error(req, res, { msgCode: 'WRONG_PASS' }, httpStatus.UNAUTHORIZED, dbTrans);
+    }
+    delete checkUser.password;
+    const { ...result_data } = checkUser;
+
+    const tokenObj = {
+      auth_id: checkUser.id,
+      user_type: checkUser.user_type,
+      expires_in: env.TOKEN_EXPIRES_IN,
+      email,
+      device_id,
+      user_role: checkUser.user_type,
+      routeAccess: []
+    };
+    result_data.role = user_type.ADMIN;
+    if (req.subAdminDetail) {
+      tokenObj.user_role = req.subAdminDetail.created_by;
+    }
+    if (checkUser.user_type === user_type.SUB_ADMIN) {
+      const findSubAdmin = req.subAdminDetail;
+      const findSubAdminAcess = await commonService.getList(SubAdminPermission, { sub_admin_id: findSubAdmin.id });
+      const subAdminControl = adminAccessControl(findSubAdminAcess?.rows);
+      if (subAdminControl.length) {
+        tokenObj.routeAccess = [...subAdminControl];
+      }
+    }
+
+    result_data.token = authJwt.generateAuthJwt(tokenObj);
+
+    req.loginData = {
+      dbTrans,
+      auth_details: result_data,
+      device_details: { device_id, device_type, device_token }
+
+    };
+    if (!result_data.token) {
+      return response.error(req, res, { msgCode: `INTERNAL_SERVER_ERROR` }, httpStatus.INTERNAL_SERVER_ERROR, dbTrans);
+    }
+    return next();
+  } catch (err) {
+    console.log('🚀 ~ file: auth.js:386 ~ exports.adminLogin= ~ err:', err);
+    return response.error(req, res, { msgCode: `INTERNAL_SERVER_ERROR` }, httpStatus.INTERNAL_SERVER_ERROR, dbTrans);
+  }
+};

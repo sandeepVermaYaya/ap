@@ -4,14 +4,10 @@ const httpStatus = require('http-status');
 const db = require('../models/index');
 const { auths: AUTH, reg_details: REG_DETAIL, reg_dsps: REG_DSP, reg_socs: REG_SOC } = db.sequelize.models;
 const commonService = require('../services/common');
-const { generateRandomPass } = require('../utils/password');
-const { enum_data } = require('../constents/index');
 const { Op, Sequelize } = require('sequelize');
-const { generateHash } = require('../utils/password');
+const { generateHash, generateRandomPass } = require('../utils/password');
 const helper = require('../utils/helper');
 const moment = require('moment');
-const multiparty = require('multiparty');
-const {status}= require('../constents/index')
 const {saveMUltipleImageInS3}= require('../utils/imageUpload');
 
 const userBasicDetail = async( req,res)=>{
@@ -21,17 +17,19 @@ const userBasicDetail = async( req,res)=>{
         const condition= {
             email: email_add
         }
-        // const imgArray= [req.files].map((el) => Object.entries(el));
-        // const image= await saveMUltipleImageInS3(imgArray[0])
+        const imgArray= [req.files].map((el) => Object.entries(el));
+        const image= await saveMUltipleImageInS3(imgArray[0])
         const findUser= await commonService.findByCondition(AUTH,condition )
         if(findUser){
             return response.error(req, res, { msgCode: 'EMAIL_ALREADY_EXISTS' }, httpStatus.CONFLICT, dbTrans);
         }
-
+        const pass= await generateRandomPass();
+        const hashPass= await generateHash(pass)
         const authDataTosave= {
             email:email_add,
             reg_type: reg_type,
-            is_email_verified: false
+            is_email_verified: false,
+            password: hashPass
         }
         const authData= await commonService.addDetail(AUTH, authDataTosave, dbTrans);
         if(!authData){
@@ -44,9 +42,9 @@ const userBasicDetail = async( req,res)=>{
               public_reg_nm,
               category,
               cpp_id,
-              cpp_link : null,
+              cpp_link : image[0]?.Location == undefined ? null : image[0]?.Location,
               pan_card,
-              pan_card_link: null ,
+              pan_card_link: image[1]?.Location == undefined ? null : image[1]?.Location,
               gstin,
               crrnt_addrs,
               rgstrd_addrs,
@@ -57,7 +55,7 @@ const userBasicDetail = async( req,res)=>{
               poc_ph_nmbr,
               poc_email,
               poc_aadhar,
-              poc_crrnt_addrs: null,
+              poc_crrnt_addrs: image[2]?.Location == undefined ? null : image[2]?.Location,
               agg_type:[agg_type],
               created_by,
               auth_id: authData.id
