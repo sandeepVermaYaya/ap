@@ -1,5 +1,6 @@
 const AWS = require("aws-sdk")
 const { env } = require('../constents/environment')
+const fs= require('fs')
 const s3 = new AWS.S3({
     credentials: {
         accessKeyId: env.AWS_ACCESS, // store it in .env file to keep it safe
@@ -39,7 +40,7 @@ const saveMUltipleImageInS3 = async(file, imgRes) => {
             const params = {
                 Bucket: 'spbrother',
                 Key:  newFileName, // File name you want to save as in S3
-                Body: element[1].path,
+                Body: fs.createReadStream(element[1].path),
                 ContentEncoding: 'base64',
                 ContentType: element[1].type ,
                 // ACL: 'public-read'
